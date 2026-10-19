@@ -13,69 +13,74 @@ class ChatController extends Controller
         return view('chat');
     }
 
-    public function send(Request $request)
-    {
-        $request->validate([
-            'message' => 'required|string|max:2000',
-        ]);
 
-        $userMessage = $request->input('message');
+public function send(Request $request)
+{
+    $validated = $request->validate([
+        'message' => 'required|string|max:2000',
+    ]);
 
-        $apiKey = env('GROQ_API_KEY');
-        $primaryModel = env('GROQ_MODEL', 'llama-3.3-70b-versatile');
-        $fallbackModel = env('GROQ_FALLBACK_MODEL', 'llama-3.1-8b-instant');
+    $apiKey = config('services.groq.key');
 
-        $models = [$primaryModel, $fallbackModel];
-
-        $responseBody = null;
-        $usedModel = null;
-
-        foreach ($models as $model) {
-            $model = trim($model);
-            if (empty($model)) continue;
-
-            // Endpoint resmi Groq API (kompatibel dengan format OpenAI)
-            $url = "https://api.groq.com/openai/v1/chat/completions";
-
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                    'Content-Type' => 'application/json',
-                ])->post($url, [
-                    'model' => $model,
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $userMessage
-                        ]
-                    ],
-                    'temperature' => 0.7,
-                ]);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $responseBody = $data['choices'][0]['message']['content'] ?? null;
-                    if ($responseBody) {
-                        $usedModel = $model;
-                        break;
-                    }
-                } else {
-                    Log::warning("Gagal menggunakan model Groq {$model}: " . $response->body());
-                }
-            } catch (\Exception $e) {
-                Log::error("Exception pada model Groq {$model}: " . $e->getMessage());
-            }
-        }
-
-        if (!$responseBody) {
-            return response()->json([
-                'error' => 'Maaf, semua model Groq sedang mengalami gangguan atau API Key Groq salah.'
-            ], 500);
-        }
-
+    if (empty($apiKey)) {
         return response()->json([
-            'reply' => $responseBody,
-            'model_used' => $usedModel
-        ]);
+            'error' => 'API key Groq belum dikonfigurasi.'
+        ], 500);
     }
+
+    $models = array_filter([
+        config('services.groq.model', 'llama-3.3-70b-versatile'),
+        config('services.groq.fallback_model', 'llama-3.1-8b-instant'),
+    ]);
+
+    foreach (array_unique($models) as $model) {
+        try {
+            $response = Http::withToken($apiKey)
+                ->acceptJson()
+                ->timeout(30)
+                ->post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    [
+                        'model' => $model,
+                        'messages' => [
+                            [
+                                'role' => 'user',
+                                'content' => $validated['message'],
+                            ],
+                        ],
+                        'temperature' => 0.7,
+                    ]
+                );
+
+            if ($response->successful()) {
+                $reply = $response->json(
+                    'choices.0.message.content'
+                );
+
+                if (is_string($reply) && trim($reply) !== '') {
+                    return response()->json([
+                        'reply' => $reply,
+                        'model_used' => $model,
+                    ]);
+                }
+            }
+
+            Log::warning('Groq API gagal', [
+                'model' => $model,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Koneksi Groq gagal', [
+                'model' => $model,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    return response()->json([
+        'error' => 'Groq gagal memberikan jawaban. Periksa API key, model, dan log Laravel.',
+    ], 502);
+}
+
 }

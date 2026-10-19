@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
+
 <body class="bg-gray-900 text-gray-100 h-screen flex flex-col justify-between">
 
     <!-- Header -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 text-center shadow-md">
         <h1 class="text-xl font-bold text-orange-400">Laravel Groq Chatbot</h1>
-<p class="text-xs text-gray-400">Powered by Groq AI (Llama 3)</p>
+        <p class="text-xs text-gray-400">Powered by Groq AI (Llama 3)</p>
     </header>
 
     <!-- Chat Container -->
@@ -29,9 +31,9 @@
         <form id="chat-form" class="max-w-3xl mx-auto flex gap-2">
             @csrf
             <input type="text" id="message-input" placeholder="Ketik pesan Anda di sini..." required
-                   class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
             <button type="submit" id="send-button"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
                 Kirim
             </button>
         </form>
@@ -61,19 +63,51 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
                     },
-                    body: JSON.stringify({ message: text })
                 });
 
-                const data = await response.json();
+
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        message: text
+                    })
+                });
+
+                const raw = await response.text();
+                let data;
+
+                try {
+                    data = JSON.parse(raw);
+                } catch {
+                    data = {
+                        error: raw || 'Respons server kosong.'
+                    };
+                }
+
                 removeLoading(loadingId);
 
                 if (response.ok) {
-                    appendMessage(data.reply, 'bot', data.model_used);
+                    appendMessage(data.reply || 'AI tidak memberikan jawaban.', 'bot', data.model_used);
                 } else {
-                    appendMessage(data.error || 'Terjadi kesalahan pada server.', 'bot');
+                    console.error('HTTP Error:', response.status, data);
+                    appendMessage(
+                        `Error ${response.status}: ${data.message || data.error || 'Permintaan gagal.'}`,
+                        'bot'
+                    );
                 }
+
             } catch (error) {
                 removeLoading(loadingId);
                 appendMessage('Gagal terhubung ke server.', 'bot');
@@ -126,4 +160,5 @@
         }
     </script>
 </body>
+
 </html>
