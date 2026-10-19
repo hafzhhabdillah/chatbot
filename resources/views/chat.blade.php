@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -9,49 +10,68 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body class="bg-gray-900 text-gray-100 h-screen flex flex-col justify-between">
+<body class="bg-gray-900 text-gray-100 h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 text-center shadow-md">
-        <h1 class="text-xl font-bold text-orange-400">Laravel Groq Chatbot</h1>
-        <p class="text-xs text-gray-400">Powered by Groq AI (Llama 3)</p>
+        <h1 class="text-xl font-bold text-orange-400">
+            Laravel Groq Chatbot
+        </h1>
+        <p class="text-xs text-gray-400">
+            Powered by Groq AI
+        </p>
     </header>
 
     <!-- Chat Container -->
-    <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
+    <div id="chat-container"
+        class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
+
         <div class="flex justify-start">
             <div class="bg-gray-800 rounded-lg p-3 max-w-lg text-sm text-gray-200 shadow">
-                Halo Bil! Ada yang bisa saya bantu hari ini?
+                Halo! Ada yang bisa saya bantu hari ini?
             </div>
         </div>
+
     </div>
 
     <!-- Input Form -->
     <div class="bg-gray-800 border-t border-gray-700 p-4">
         <form id="chat-form" class="max-w-3xl mx-auto flex gap-2">
             @csrf
-            <input type="text" id="message-input" placeholder="Ketik pesan Anda di sini..." required
-                class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
-            <button type="submit" id="send-button"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
+
+            <input
+                type="text"
+                id="message-input"
+                placeholder="Ketik pesan Anda di sini..."
+                required
+                autocomplete="off"
+                class="flex-1 min-w-0 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+
+            <button
+                type="submit"
+                id="send-button"
+                class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg font-medium transition">
                 Kirim
             </button>
         </form>
     </div>
 
-    <!-- JavaScript Chat Logic -->
+    <!-- JavaScript -->
     <script>
         const chatContainer = document.getElementById('chat-container');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
 
-        chatForm.addEventListener('submit', async function(e) {
+        chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
+
             const text = messageInput.value.trim();
+
             if (!text) return;
 
             appendMessage(text, 'user');
+
             messageInput.value = '';
             messageInput.disabled = true;
             sendButton.disabled = true;
@@ -59,19 +79,7 @@
             const loadingId = appendLoading();
 
             try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute('content')
-                    },
-                });
-
-
-                const response = await fetch('/chat', {
+                const res = await fetch('/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -85,7 +93,7 @@
                     })
                 });
 
-                const raw = await response.text();
+                const raw = await res.text();
                 let data;
 
                 try {
@@ -98,19 +106,35 @@
 
                 removeLoading(loadingId);
 
-                if (response.ok) {
-                    appendMessage(data.reply || 'AI tidak memberikan jawaban.', 'bot', data.model_used);
-                } else {
-                    console.error('HTTP Error:', response.status, data);
+                if (res.ok) {
                     appendMessage(
-                        `Error ${response.status}: ${data.message || data.error || 'Permintaan gagal.'}`,
+                        data.reply || 'AI tidak memberikan jawaban.',
+                        'bot',
+                        data.model_used
+                    );
+                } else {
+                    console.error('HTTP Error:', res.status, data);
+
+                    appendMessage(
+                        `Error ${res.status}: ${
+                            data.message ||
+                            data.error ||
+                            'Permintaan gagal.'
+                        }`,
                         'bot'
                     );
                 }
 
             } catch (error) {
                 removeLoading(loadingId);
-                appendMessage('Gagal terhubung ke server.', 'bot');
+
+                console.error('Fetch error:', error);
+
+                appendMessage(
+                    'Gagal terhubung ke server. Periksa koneksi Laravel.',
+                    'bot'
+                );
+
             } finally {
                 messageInput.disabled = false;
                 sendButton.disabled = false;
@@ -121,44 +145,69 @@
         function appendMessage(text, sender, model = null) {
             const isUser = sender === 'user';
             const wrapper = document.createElement('div');
-            wrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
 
-            let modelBadge = model ? `<div class="text-[10px] text-gray-400 mt-1 text-right">Model: ${model}</div>` : '';
+            wrapper.className = `flex ${
+                isUser ? 'justify-end' : 'justify-start'
+            }`;
 
-            wrapper.innerHTML = `
-                <div class="${isUser ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-200'} rounded-lg p-3 max-w-lg text-sm shadow">
-                    <div>${escapeHtml(text)}</div>
-                    ${modelBadge}
-                </div>
-            `;
+            const bubble = document.createElement('div');
+
+            bubble.className = `${
+                isUser
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-200'
+            } rounded-lg p-3 max-w-lg text-sm shadow whitespace-pre-wrap break-words`;
+
+            // Tampilkan pesan sebagai teks biasa, bukan HTML.
+            const messageText = document.createElement('div');
+            messageText.textContent = text;
+            bubble.appendChild(messageText);
+
+            if (model) {
+                const badge = document.createElement('div');
+
+                badge.className = 'text-[10px] text-gray-400 mt-1';
+                badge.textContent = `Model: ${model}`;
+
+                bubble.appendChild(badge);
+            }
+
+            wrapper.appendChild(bubble);
             chatContainer.appendChild(wrapper);
+
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function appendLoading() {
             const id = 'loading-' + Date.now();
             const wrapper = document.createElement('div');
+
             wrapper.id = id;
             wrapper.className = 'flex justify-start';
-            wrapper.innerHTML = `
-                <div class="bg-gray-800 text-gray-400 rounded-lg p-3 text-sm shadow animate-pulse">
-                    Sedang berpikir...
-                </div>
-            `;
+
+            const bubble = document.createElement('div');
+
+            bubble.className =
+                'bg-gray-800 text-gray-400 rounded-lg p-3 text-sm shadow animate-pulse';
+
+            bubble.textContent = 'Sedang berpikir...';
+
+            wrapper.appendChild(bubble);
             chatContainer.appendChild(wrapper);
+
             chatContainer.scrollTop = chatContainer.scrollHeight;
+
             return id;
         }
 
         function removeLoading(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
+            const element = document.getElementById(id);
 
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            if (element) {
+                element.remove();
+            }
         }
     </script>
-</body>
 
+</body>
 </html>
