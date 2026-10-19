@@ -1,58 +1,165 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🤖 Laravel AI Chatbot
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi chatbot AI sederhana yang dibuat menggunakan **Laravel** dan **Groq API**. Aplikasi ini memungkinkan pengguna mengirim pesan dan menerima jawaban dari AI melalui antarmuka web yang sederhana dan responsif.
 
-## About Laravel
+## ✨ Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- 💬 Mengirim pesan dan menerima respons dari AI.
+- ⚡ Menggunakan Groq API untuk memproses percakapan.
+- 🎨 Antarmuka chatbot dengan desain modern dan dark mode.
+- 🔒 Menggunakan CSRF protection untuk request dari form.
+- 🛠️ Penanganan error ketika request API gagal.
+- 📱 Tampilan yang nyaman digunakan di berbagai ukuran layar.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🧰 Teknologi yang Digunakan
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **PHP** — bahasa pemrograman backend.
+- **Laravel** — framework aplikasi web.
+- **Groq API** — layanan AI untuk menghasilkan respons chatbot.
+- **JavaScript** — menangani interaksi dan pengiriman pesan.
+- **Tailwind CSS** — membantu membuat tampilan antarmuka.
+- **Composer** — mengelola dependensi PHP.
 
-## Learning Laravel
+## 📋 Persyaratan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Pastikan perangkat sudah memiliki:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP sesuai versi yang didukung oleh proyek Laravel.
+- Composer.
+- Node.js dan npm jika diperlukan oleh aset frontend.
+- Groq API key yang valid.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🚀 Cara Instalasi
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/hafzhhabdillah/chatbot.git
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Masuk ke folder proyek
 
-## Contributing
+```bash
+cd chatbot
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Install dependensi Laravel
 
-## Code of Conduct
+```bash
+composer install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Buat file environment
 
-## Security Vulnerabilities
+Salin file `.env.example` menjadi `.env`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Windows PowerShell:
 
-## License
+```powershell
+Copy-Item .env.example .env
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Generate application key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Konfigurasi Groq API
+
+Buka file `.env`, lalu tambahkan atau sesuaikan konfigurasi berikut:
+
+```dotenv
+GROQ_API_KEY=masukkan_api_key_groq_kamu
+GROQ_MODEL=openai/gpt-oss-20b
+GROQ_FALLBACK_MODEL=openai/gpt-oss-120b
+```
+
+Ganti `masukkan_api_key_groq_kamu` dengan API key milikmu. Pastikan nama model masih didukung oleh akun dan layanan Groq saat aplikasi dijalankan.
+
+**Penting:** Jangan mengunggah API key ke GitHub atau membagikannya kepada orang lain.
+
+Jika controller membaca konfigurasi melalui `config('services.groq.key')`, pastikan `config/services.php` juga memiliki konfigurasi Groq yang sesuai.
+
+### 7. Bersihkan cache konfigurasi
+
+Jalankan perintah ini di terminal, bukan di dalam file `.env`.
+
+```bash
+php artisan config:clear
+```
+
+### 8. Jalankan aplikasi
+
+```bash
+php artisan serve
+```
+
+Buka alamat berikut di browser:
+
+http://127.0.0.1:8000
+
+## 💡 Cara Menggunakan
+
+1. Jalankan aplikasi Laravel.
+2. Buka halaman chatbot di browser.
+3. Ketik pertanyaan pada kolom pesan.
+4. Tekan tombol kirim.
+5. Tunggu AI memproses pesan dan menampilkan respons.
+
+## 🐛 Troubleshooting
+
+### Chatbot tidak memberikan respons
+
+- Pastikan koneksi internet tersedia.
+- Periksa apakah `GROQ_API_KEY` valid.
+- Pastikan nama model yang digunakan masih tersedia di Groq.
+- Periksa konfigurasi pada `config/services.php` jika digunakan oleh controller.
+- Lihat pesan error pada browser Developer Tools dan log Laravel di `storage/logs/laravel.log`.
+
+### Error konfigurasi `.env`
+
+Pastikan setiap variabel ditulis pada baris terpisah. Jangan menambahkan perintah terminal seperti `php artisan config:clear` ke dalam file `.env`.
+
+### Error HTTP 419
+
+Periksa apakah request dari frontend mengirim token CSRF yang benar dan sesi Laravel berjalan dengan baik.
+
+## 📁 Struktur Proyek
+
+```text
+chatbot/
+├── app/
+│   └── Http/
+│       └── Controllers/
+│           └── ChatController.php
+├── config/
+│   └── services.php
+├── resources/
+│   └── views/
+│       └── chat.blade.php
+├── routes/
+│   └── web.php
+├── storage/
+│   └── logs/
+├── .env.example
+├── composer.json
+└── README.md
+```
+
+*Struktur di atas merupakan gambaran umum. Sesuaikan dengan file yang benar-benar tersedia di repository.*
+
+## 🔐 Keamanan
+
+- Simpan API key di file `.env`.
+- Jangan commit file `.env` ke repository publik.
+- Gunakan `.env.example` untuk mendokumentasikan nama variabel konfigurasi tanpa menyertakan rahasia.
+- Jangan menampilkan API key atau informasi sensitif dalam pesan error.
+
+## 📄 Lisensi
+
+Proyek ini dibuat untuk tujuan pembelajaran dan pengembangan aplikasi chatbot berbasis AI.
+
+---
+
+**Dibuat menggunakan Laravel dan Groq API.** 🤖
